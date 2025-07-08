@@ -10,15 +10,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Carga de Chart.js para los gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Carga del plugin Chart.js Data Labels para mostrar porcentajes en las barras -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* Fondo oscuro para el tablero */
-            background-color: #1a202c; /* Gris muy oscuro */
-            color: #e2e8f0; /* Texto gris claro */
+            /* Fondo un poco oscuro para el tablero */
+            background-color: #2c3e50; /* Un gris azulado oscuro */
+            color: #e2e8f0; /* Texto gris claro para contraste */
         }
         .card {
-            background-color: #2d3748; /* Gris oscuro para las tarjetas */
+            background-color: #34495e; /* Un gris oscuro para las tarjetas */
             border-radius: 0.75rem; /* Bordes redondeados */
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -27,6 +29,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            border: 1px solid #4a6572; /* Borde sutil */
         }
         .card-title {
             font-size: 1rem;
@@ -43,40 +46,41 @@
         .dashboard-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #e2e8f0;
+            color: #e2e8f0; /* Texto claro para el título */
             margin-bottom: 0.5rem; /* Reduced margin to fit engineer name */
             text-align: center;
         }
         .engineer-info {
             font-size: 1.25rem;
             font-weight: 500;
-            color: #a0aec0;
+            color: #a0aec0; /* Gris medio para el nombre del ingeniero */
             text-align: center;
             margin-bottom: 2rem; /* Added margin below engineer name */
         }
         .general-data-section, .valorized-progress-section, .financial-section, .overall-progress-chart-section {
-            background-color: #2d3748;
+            background-color: #34495e; /* Un gris oscuro para las secciones */
             border-radius: 0.75rem;
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
+            border: 1px solid #4a6572; /* Borde sutil */
         }
         .general-data-item {
             display: flex;
             justify-content: space-between;
             padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Líneas de separación más claras */
         }
         .general-data-item:last-child {
             border-bottom: none;
         }
         .general-data-label {
             font-weight: 500;
-            color: #a0aec0;
+            color: #a0aec0; /* Gris oscuro */
         }
         .general-data-value {
             font-weight: 600;
-            color: #e2e8f0;
+            color: #e2e8f0; /* Texto claro */
         }
         .valorized-progress-section table, .financial-section table {
             width: 100%;
@@ -86,17 +90,17 @@
         .financial-section th, .financial-section td {
             padding: 0.75rem 1.5rem;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Líneas de tabla más claras */
         }
         .valorized-progress-section th, .financial-section th {
-            background-color: #4a5568; /* Slightly lighter dark gray for table header */
-            color: #cbd5e0; /* Light gray for header text */
+            background-color: #4a6572; /* Gris oscuro para el encabezado de tabla */
+            color: #cbd5e0; /* Gris claro para el texto del encabezado */
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.875rem;
         }
         .valorized-progress-section td, .financial-section td {
-            color: #e2e8f0;
+            color: #e2e8f0; /* Texto claro en las celdas */
             font-size: 0.95rem;
         }
         .valorized-progress-section tbody tr:last-child td,
@@ -104,15 +108,26 @@
             border-bottom: none;
         }
         .chart-container {
-            background-color: #2d3748; /* Dark gray for chart containers */
+            background-color: #34495e; /* Gris oscuro para los contenedores de gráficos */
             border-radius: 0.75rem;
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #4a6572; /* Borde sutil */
         }
         /* Estilo para hacer el canvas más pequeño */
         .overall-progress-chart-section .chart-canvas-wrapper {
             max-width: 50%; /* Hace el contenedor del gráfico la mitad de ancho */
             margin: 0 auto; /* Centra el contenedor */
+        }
+
+        /* Clases para resaltar en la tabla */
+        .highlight-row-red {
+            background-color: #4a2020; /* Rojo oscuro para el fondo de la fila */
+        }
+        .text-highlight-red {
+            color: #ff6b6b !important; /* Rojo más claro y vibrante para texto */
+            font-weight: bold;
+            font-size: 1.1rem; /* Un poco más grande */
         }
     </style>
 </head>
@@ -144,7 +159,7 @@
 
         <!-- Sección de Datos Generales del Proyecto -->
         <div class="general-data-section">
-            <h2 class="text-xl font-semibold text-white mb-4">Datos Generales del Proyecto</h2>
+            <h2 class="text-xl font-semibold text-e2e8f0 mb-4">Datos Generales del Proyecto</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="general-data-item">
                     <span class="general-data-label">Avance Planificado:</span>
@@ -175,7 +190,7 @@
 
         <!-- Sección de Panel Financiero -->
         <div class="financial-section">
-            <h2 class="text-xl font-semibold text-white mb-4">Panel Financiero</h2>
+            <h2 class="text-xl font-semibold text-e2e8f0 mb-4">Panel Financiero</h2>
             <div class="overflow-x-auto rounded-xl">
                 <table class="min-w-full divide-y divide-gray-700">
                     <thead class="bg-gray-700">
@@ -193,7 +208,7 @@
 
         <!-- Sección de Avances Valorizado de Partidas -->
         <div class="valorized-progress-section">
-            <h2 class="text-xl font-semibold text-white mb-4">Avances Valorizado de Partidas</h2>
+            <h2 class="text-xl font-semibold text-e2e8f0 mb-4">Avances Valorizado de Partidas</h2>
             <div class="overflow-x-auto rounded-xl">
                 <table class="min-w-full divide-y divide-gray-700">
                     <thead class="bg-gray-700">
@@ -214,7 +229,7 @@
 
         <!-- Sección de Avance de Obra en Barras -->
         <div class="overall-progress-chart-section chart-container">
-            <h2 class="text-xl font-semibold text-white mb-4">Avance General de Obra</h2>
+            <h2 class="text-xl font-semibold text-e2e8f0 mb-4">Avance General de Obra</h2>
             <div class="chart-canvas-wrapper"> <!-- Wrapper for sizing the chart -->
                 <canvas id="overallProgressBarChart"></canvas>
             </div>
@@ -223,6 +238,9 @@
     </div>
 
     <script>
+        // Register the Chart.js Data Labels plugin
+        Chart.register(ChartDataLabels);
+
         // Simulated data (as if coming from your Excel/Power BI)
         const projectData = {
             general: {
@@ -232,7 +250,7 @@
                 tiempoTotalDias: 370,
                 diasTranscurridos: 322,
                 fechaInicioProyecto: "2024-06-18",
-                fechaFinPrevista: "2025-08-07", // Format YYYY-MM-DD
+                fechaFinPrevista: "2025-08-07", // Format: YYYY-MM-DD
                 montoContratado: 18583175.06,
                 montoFacturado: 13104280.83,
             },
@@ -301,8 +319,8 @@
             financialData.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${item.concepto}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatCurrency(item.monto)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-e2e8f0">${item.concepto}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-e2e8f0">${formatCurrency(item.monto)}</td>
                 `;
                 financialPanelTableBody.appendChild(row);
             });
@@ -317,19 +335,26 @@
                 const pendienteValorizarPorcentaje = (item.montoTotal > 0) ? ((item.montoTotal - item.valorizado) / item.montoTotal * 100).toFixed(2) : (0).toFixed(2);
                 
                 // Determine text color for 'Pendiente por Facturar'
-                const pendienteFacturarTextColorClass = item.pendienteFacturar > 0 ? 'text-red-500' : 'text-gray-300';
+                const pendienteFacturarTextColorClass = item.pendienteFacturar > 0 ? 'text-red-700 font-bold' : 'text-e2e8f0'; // Darker red
                 
                 // Determine text color and bold for 'Pendiente Valorizar %'
-                const pendienteValorizarTextColorClass = parseFloat(pendienteValorizarPorcentaje) > 50 ? 'text-red-500 font-bold text-lg' : 'text-gray-300';
+                const pendienteValorizarTextColorClass = parseFloat(pendienteValorizarPorcentaje) > 50 ? 'text-highlight-red' : 'text-e2e8f0';
 
                 // Determine text color and bold for 'Avance %' if below 50%
-                const avanceTextColorClass = parseFloat(avancePorcentaje) < 50 ? 'text-red-500 font-bold' : 'text-gray-300';
+                const avanceTextColorClass = parseFloat(avancePorcentaje) < 50 ? 'text-highlight-red' : 'text-e2e8f0';
+
+                // Determine row background class
+                let rowBgClass = ''; // No default background for rows
+                if (parseFloat(pendienteValorizarPorcentaje) > 50 || parseFloat(avancePorcentaje) < 50) {
+                    rowBgClass = 'highlight-row-red'; // Apply light red background for the row
+                }
 
 
                 const row = document.createElement('tr');
+                row.className = `${rowBgClass} divide-y divide-gray-700`; // Apply row background and default dividers
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${item.partida}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatCurrency(item.valorizado)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-e2e8f0">${item.partida}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-e2e8f0">${formatCurrency(item.valorizado)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteFacturarTextColorClass}">${formatCurrency(item.pendienteFacturar)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${avanceTextColorClass}">${avancePorcentaje}%</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteValorizarTextColorClass}">${pendienteValorizarPorcentaje}%</td>
@@ -375,7 +400,7 @@
                             beginAtZero: true,
                             max: 100,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)' /* Light grid lines for X axis */
+                                color: 'rgba(255, 255, 255, 0.1)' /* Light grid lines for X axis on dark background */
                             },
                             ticks: {
                                 color: '#e2e8f0', /* Text color for X axis labels */
@@ -397,8 +422,18 @@
                         legend: {
                             display: false /* No legend needed for single dataset */
                         },
-                        title: {
-                            display: false,
+                        datalabels: { // Configuration for data labels
+                            color: '#e2e8f0', // Light color for labels on dark bars
+                            font: {
+                                weight: 'bold',
+                                size: 14 // Make labels slightly larger
+                            },
+                            formatter: function(value, context) {
+                                return value.toFixed(2) + '%'; // Format as percentage
+                            },
+                            anchor: 'end', // Position labels at the end of the bar
+                            align: 'end', // Align labels to the end of the bar
+                            offset: 4 // Offset from the end of the bar
                         }
                     }
                 }
