@@ -65,6 +65,15 @@
             margin-bottom: 2rem;
             border: 1px solid #4a6572; /* Borde sutil */
         }
+        /* Specific background for S-Curve section to be white */
+        .s-curve-section {
+            background-color: #ffffff; /* Fondo blanco para la sección de la Curva S */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0; /* Borde sutil para fondo blanco */
+        }
         .general-data-item {
             display: flex;
             justify-content: space-between;
@@ -119,6 +128,11 @@
             max-width: 50%; /* Hace el contenedor del gráfico la mitad de ancho */
             margin: 0 auto; /* Centra el contenedor */
         }
+        /* Ampliación del wrapper del gráfico de la Curva S */
+        .s-curve-section .chart-canvas-wrapper {
+            max-width: 90%; /* Ampliado para mayor visibilidad */
+            margin: 0 auto; /* Centra el contenedor */
+        }
 
         /* Clases para resaltar en la tabla */
         .highlight-row-red {
@@ -128,6 +142,12 @@
             color: #ff6b6b !important; /* Rojo más claro y vibrante para texto */
             font-weight: bold;
             font-size: 1.1rem; /* Un poco más grande */
+        }
+
+        /* Estilos para la Curva S */
+        .s-curve-chart-canvas {
+            width: 100%;
+            height: 450px; /* Altura ajustada para el gráfico de Curva S */
         }
     </style>
 </head>
@@ -235,6 +255,14 @@
             </div>
         </div>
 
+        <!-- Sección de Visualizador de Curva S -->
+        <div class="s-curve-section chart-container">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Visualizador de Curva S</h2>
+            <div class="chart-canvas-wrapper"> <!-- Wrapper for sizing the chart -->
+                <canvas id="sCurveChart" class="s-curve-chart-canvas"></canvas>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -250,7 +278,7 @@
                 tiempoTotalDias: 370,
                 diasTranscurridos: 322,
                 fechaInicioProyecto: "2024-06-18",
-                fechaFinPrevista: "2025-08-07", // Format: YYYY-MM-DD
+                fechaFinPrevista: "2025-08-07", // Format:YYYY-MM-DD
                 montoContratado: 18583175.06,
                 montoFacturado: 13104280.83,
             },
@@ -287,6 +315,22 @@
         function formatCurrency(amount) {
             return `S/ ${amount.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
+
+        // Data for S-Curve Chart (updated with new data)
+        const sCurveLabels = [
+            '18/06/2024', '30/06/2024', '31/07/2024', '31/08/2024', '30/09/2024',
+            '31/10/2024', '30/11/2024', '31/12/2024', '31/01/2025', '28/02/2025',
+            '31/03/2025', '30/04/2025', '13/05/2025', '30/06/2025', '31/07/2025', '07/08/2025'
+        ];
+        const sCurvePlannedData = [
+            0.00, 1.19, 6.73, 14.23, 20.87, 27.24, 36.02, 40.15, 45.45, 47.73,
+            53.61, 59.13, 62.91, 67.95, 88.75, 97.80
+        ];
+        const sCurveActualData = [
+            0.00, 1.19, 6.73, 14.24, 20.88, 27.24, 36.02, 40.16, 45.46, 47.73,
+            53.62, 57.45, 61.23, 70.51, null, null // Use null for future dates with no actual data
+        ];
+
 
         // Update metric cards and general data section
         document.addEventListener('DOMContentLoaded', () => {
@@ -354,7 +398,7 @@
                 row.className = `${rowBgClass} divide-y divide-gray-700`; // Apply row background and default dividers
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-e2e8f0">${item.partida}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-e2e8f0">${formatCurrency(item.valorizado)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-e2e8f0">${formatCurrency(item.pendienteFacturar)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteFacturarTextColorClass}">${formatCurrency(item.pendienteFacturar)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${avanceTextColorClass}">${avancePorcentaje}%</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteValorizarTextColorClass}">${pendienteValorizarPorcentaje}%</td>
@@ -434,6 +478,125 @@
                             anchor: 'end', // Position labels at the end of the bar
                             align: 'end', // Align labels to the end of the bar
                             offset: 4 // Offset from the end of the bar
+                        }
+                    }
+                }
+            });
+
+            // Configuration and rendering of the S-Curve Chart
+            const sCurveCtx = document.getElementById('sCurveChart').getContext('2d');
+            new Chart(sCurveCtx, {
+                type: 'line',
+                data: {
+                    labels: sCurveLabels,
+                    datasets: [
+                        {
+                            label: 'Avance Planificado (%)',
+                            data: sCurvePlannedData,
+                            borderColor: '#3182ce', // Azul
+                            backgroundColor: 'rgba(49, 130, 206, 0.2)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#3182ce',
+                            datalabels: {
+                                align: 'end', // Above the line
+                                anchor: 'end',
+                                offset: 8, // Offset from the point
+                                color: '#3182ce', // Color matching the line
+                                display: function(context) {
+                                    return context.dataset.data[context.dataIndex] !== null; // Only display if data exists
+                                },
+                                formatter: function(value) {
+                                    return value.toFixed(2) + '%';
+                                }
+                            }
+                        },
+                        {
+                            label: 'Avance Real (%)',
+                            data: sCurveActualData,
+                            borderColor: '#e53e3e', // Rojo
+                            backgroundColor: 'rgba(229, 62, 62, 0.2)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#e53e3e',
+                            datalabels: {
+                                align: 'start', // Below the line
+                                anchor: 'start',
+                                offset: 8, // Offset from the point
+                                color: '#e53e3e', // Color matching the line
+                                display: function(context) {
+                                    return context.dataset.data[context.dataIndex] !== null; // Only display if data exists
+                                },
+                                formatter: function(value) {
+                                    return value.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    backgroundColor: 'white', // Set the chart background to white
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#1a202c', // Texto oscuro para la leyenda en fondo blanco
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Curva S de Avance de Obra',
+                            color: '#1a202c', // Texto oscuro para el título en fondo blanco
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fechas',
+                                color: '#e2e8f0', // Texto blanco para título de eje X
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                color: '#e2e8f0' // Texto blanco para etiquetas de eje X
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)' // Líneas de cuadrícula claras
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Porcentaje de Avance Acumulado',
+                                color: '#e2e8f0', // Texto blanco para título de eje Y
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                color: '#e2e8f0' // Texto blanco para etiquetas de eje Y
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)' // Líneas de cuadrícula claras
+                            }
                         }
                     }
                 }
