@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero de Control de Obra</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de la fuente Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Carga de Chart.js para los gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Fondo oscuro para el tablero */
+            background-color: #1a202c; /* Gris muy oscuro */
+            color: #e2e8f0; /* Texto gris claro */
+        }
+        .card {
+            background-color: #2d3748; /* Gris oscuro para las tarjetas */
+            border-radius: 0.75rem; /* Bordes redondeados */
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #a0aec0; /* Gris medio para los títulos de las tarjetas */
+            margin-bottom: 0.5rem;
+        }
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4299e1; /* Azul vibrante para los valores principales */
+        }
+        /* Style for the dashboard title */
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 0.5rem; /* Reduced margin to fit engineer name */
+            text-align: center;
+        }
+        .engineer-info {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #a0aec0;
+            text-align: center;
+            margin-bottom: 2rem; /* Added margin below engineer name */
+        }
+        .general-data-section, .valorized-progress-section, .financial-section, .overall-progress-chart-section {
+            background-color: #2d3748;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .general-data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .general-data-item:last-child {
+            border-bottom: none;
+        }
+        .general-data-label {
+            font-weight: 500;
+            color: #a0aec0;
+        }
+        .general-data-value {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .valorized-progress-section table, .financial-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .valorized-progress-section th, .valorized-progress-section td,
+        .financial-section th, .financial-section td {
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .valorized-progress-section th, .financial-section th {
+            background-color: #4a5568; /* Slightly lighter dark gray for table header */
+            color: #cbd5e0; /* Light gray for header text */
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        .valorized-progress-section td, .financial-section td {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+        .valorized-progress-section tbody tr:last-child td,
+        .financial-section tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .chart-container {
+            background-color: #2d3748; /* Dark gray for chart containers */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Estilo para hacer el canvas más pequeño */
+        .overall-progress-chart-section .chart-canvas-wrapper {
+            max-width: 50%; /* Hace el contenedor del gráfico la mitad de ancho */
+            margin: 0 auto; /* Centra el contenedor */
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="container mx-auto">
+        <h1 class="dashboard-title">MEJORAMIENTO DE LOS SERVICIOS EDUCATIVOS EN EL NIVEL PRIMARIO QUE PRESTA LA I.E. N° 41042 - PEDRO JOSE TORDOYA MONTOYA</h1>
+        <div class="engineer-info">Ingeniero Responsable: Ing. Carlos Alberto Cadenas Torres</div>
+
+        <!-- Sección de Métricas Clave -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Tarjeta: Porcentaje de Avance de la Obra (Actual) -->
+            <div class="card">
+                <div class="card-title">Avance de la Obra</div>
+                <div id="avanceObra" class="card-value"></div>
+            </div>
+
+            <!-- Tarjeta: Porcentaje Pendiente por Acabar la Obra -->
+            <div class="card">
+                <div class="card-title">Pendiente por Acabar</div>
+                <div id="porcentajePendiente" class="card-value"></div>
+            </div>
+
+            <!-- Tarjeta: Días Restantes por Acabar la Obra -->
+            <div class="card">
+                <div class="card-title">Días Restantes</div>
+                <div id="diasRestantes" class="card-value"></div>
+            </div>
+        </div>
+
+        <!-- Sección de Datos Generales del Proyecto -->
+        <div class="general-data-section">
+            <h2 class="text-xl font-semibold text-white mb-4">Datos Generales del Proyecto</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="general-data-item">
+                    <span class="general-data-label">Avance Planificado:</span>
+                    <span id="avancePlanificado" class="general-data-value"></span>
+                </div>
+                <div class="general-data-item">
+                    <span class="general-data-label">Avance Real:</span>
+                    <span id="avanceReal" class="general-data-value"></span>
+                </div>
+                <div class="general-data-item">
+                    <span class="general-data-label">Tiempo Total Días:</span>
+                    <span id="tiempoTotalDias" class="general-data-value"></span>
+                </div>
+                <div class="general-data-item">
+                    <span class="general-data-label">Días Transcurridos:</span>
+                    <span id="diasTranscurridos" class="general-data-value"></span>
+                </div>
+                <div class="general-data-item">
+                    <span class="general-data-label">Fecha Inicio Proyecto:</span>
+                    <span id="fechaInicioProyecto" class="general-data-value"></span>
+                </div>
+                <div class="general-data-item">
+                    <span class="general-data-label">Fecha Fin Prevista:</span>
+                    <span id="fechaFinPrevista" class="general-data-value"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Panel Financiero -->
+        <div class="financial-section">
+            <h2 class="text-xl font-semibold text-white mb-4">Panel Financiero</h2>
+            <div class="overflow-x-auto rounded-xl">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Concepto</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Monto (S/)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financialPanelTableBody" class="bg-gray-800 divide-y divide-gray-700">
+                        <!-- Data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección de Avances Valorizado de Partidas -->
+        <div class="valorized-progress-section">
+            <h2 class="text-xl font-semibold text-white mb-4">Avances Valorizado de Partidas</h2>
+            <div class="overflow-x-auto rounded-xl">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Partida</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Monto Valorizado (S/)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Pendiente por Facturar (S/)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Avance %</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Pendiente Valorizar %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="valorizedPartidasTableBody" class="bg-gray-800 divide-y divide-gray-700">
+                        <!-- Data will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección de Avance de Obra en Barras -->
+        <div class="overall-progress-chart-section chart-container">
+            <h2 class="text-xl font-semibold text-white mb-4">Avance General de Obra</h2>
+            <div class="chart-canvas-wrapper"> <!-- Wrapper for sizing the chart -->
+                <canvas id="overallProgressBarChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Simulated data (as if coming from your Excel/Power BI)
+        const projectData = {
+            general: {
+                avanceObra: 70.51,
+                avancePlanificado: 67.95,
+                avanceReal: 70.51,
+                tiempoTotalDias: 370,
+                diasTranscurridos: 322,
+                fechaInicioProyecto: "2024-06-18",
+                fechaFinPrevista: "2025-08-07", // Format YYYY-MM-DD
+                montoContratado: 18583175.06,
+                montoFacturado: 13104280.83,
+            },
+            partidasValorizado: [ // Data for contract partidas' valorized progress and pending to invoice
+                { partida: "Obras Provisionales", montoTotal: 876452.84, valorizado: 850791.21, pendienteFacturar: 25661.63 },
+                { partida: "Plan De Contingencia", montoTotal: 1247565.76, valorizado: 1245309.13, pendienteFacturar: 2256.63 },
+                { partida: "Estructuras", montoTotal: 6094197.28, valorizado: 5621648.7, pendienteFacturar: 472548.58 },
+                { partida: "Arquitectura", montoTotal: 3127410.5, valorizado: 1811099.2, pendienteFacturar: 1316311.3 },
+                { partida: "Instalaciones Sanitarias", montoTotal: 236207.94, valorizado: 118391.23, pendienteFacturar: 117816.71 },
+                { partida: "Instalaciones Electricas", montoTotal: 960564.56, valorizado: 285470.71, pendienteFacturar: 675093.85 },
+                { partida: "Instalaciones Comunicaciones", montoTotal: 320688.41, valorizado: 72913.09, pendienteFacturar: 247775.32 },
+                { partida: "Modulo Educativo Cocina", montoTotal: 7720.48, valorizado: 0, pendienteFacturar: 7720.48 },
+                { partida: "Instalaciones De Media Tension", montoTotal: 339699.3, valorizado: 0, pendienteFacturar: 339699.3 },
+                { partida: "Mobiliario Y Equipamiento", montoTotal: 924740.2, valorizado: 107055, pendienteFacturar: 817685.2 },
+                { partida: "Plan Covid", montoTotal: 111025.24, valorizado: 106460.868, pendienteFacturar: 4564.371956 },
+            ]
+        };
+
+        // Function to calculate remaining days
+        function calculateDaysRemaining(endDateString) {
+            const today = new Date();
+            const endDate = new Date(endDateString);
+            // Ensure end date is valid
+            if (isNaN(endDate.getTime())) {
+                return "N/A"; // Return "Not Applicable" if date is invalid
+            }
+            const diffTime = endDate.getTime() - today.getTime(); // Difference in milliseconds
+            // Convert milliseconds to days, rounding up
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 0; // If negative, it means the date has passed, show 0 or a message
+        }
+
+        // Helper function for currency formatting (Peruvian Soles)
+        function formatCurrency(amount) {
+            return `S/ ${amount.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        // Update metric cards and general data section
+        document.addEventListener('DOMContentLoaded', () => {
+            // Current Work Progress
+            document.getElementById('avanceObra').innerText = `${projectData.general.avanceObra.toFixed(2)}%`;
+
+            // Percentage Remaining to Finish Work
+            const porcentajePendiente = (100 - projectData.general.avanceObra).toFixed(2);
+            document.getElementById('porcentajePendiente').innerText = `${porcentajePendiente}%`;
+
+            // Days Remaining to Finish Work
+            const diasRestantes = calculateDaysRemaining(projectData.general.fechaFinPrevista);
+            document.getElementById('diasRestantes').innerText = `${diasRestantes} días`;
+
+            // General Project Data
+            document.getElementById('avancePlanificado').innerText = `${projectData.general.avancePlanificado.toFixed(2)}%`;
+            document.getElementById('avanceReal').innerText = `${projectData.general.avanceReal.toFixed(2)}%`;
+            document.getElementById('tiempoTotalDias').innerText = `${projectData.general.tiempoTotalDias} días`;
+            document.getElementById('diasTranscurridos').innerText = `${projectData.general.diasTranscurridos} días`;
+            document.getElementById('fechaInicioProyecto').innerText = projectData.general.fechaInicioProyecto;
+            document.getElementById('fechaFinPrevista').innerText = projectData.general.fechaFinPrevista;
+
+            // Populate the Financial Panel table
+            const financialPanelTableBody = document.getElementById('financialPanelTableBody');
+            const financialData = [
+                { concepto: "Monto Contratado", monto: projectData.general.montoContratado },
+                { concepto: "Monto Facturado", monto: projectData.general.montoFacturado },
+                { concepto: "Saldo Pendiente por Cobrar", monto: projectData.general.montoContratado - projectData.general.montoFacturado },
+            ];
+            financialData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${item.concepto}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatCurrency(item.monto)}</td>
+                `;
+                financialPanelTableBody.appendChild(row);
+            });
+
+
+            // Populate the Valorized Partidas table
+            const valorizedPartidasTableBody = document.getElementById('valorizedPartidasTableBody');
+            projectData.partidasValorizado.forEach(item => {
+                // Calculate Avance % based on valorizado / montoTotal
+                const avancePorcentaje = (item.montoTotal > 0) ? (item.valorizado / item.montoTotal * 100).toFixed(2) : (0).toFixed(2);
+                // Calculate Pendiente Valorizar % based on (montoTotal - valorizado) / montoTotal
+                const pendienteValorizarPorcentaje = (item.montoTotal > 0) ? ((item.montoTotal - item.valorizado) / item.montoTotal * 100).toFixed(2) : (0).toFixed(2);
+                
+                // Determine text color for 'Pendiente por Facturar'
+                const pendienteFacturarTextColorClass = item.pendienteFacturar > 0 ? 'text-red-500' : 'text-gray-300';
+                
+                // Determine text color and bold for 'Pendiente Valorizar %'
+                const pendienteValorizarTextColorClass = parseFloat(pendienteValorizarPorcentaje) > 50 ? 'text-red-500 font-bold text-lg' : 'text-gray-300';
+
+                // Determine text color and bold for 'Avance %' if below 50%
+                const avanceTextColorClass = parseFloat(avancePorcentaje) < 50 ? 'text-red-500 font-bold' : 'text-gray-300';
+
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${item.partida}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatCurrency(item.valorizado)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteFacturarTextColorClass}">${formatCurrency(item.pendienteFacturar)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${avanceTextColorClass}">${avancePorcentaje}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${pendienteValorizarTextColorClass}">${pendienteValorizarPorcentaje}%</td>
+                `;
+                valorizedPartidasTableBody.appendChild(row);
+            });
+
+            // Configuration and rendering of the Overall Progress Bar Chart
+            const overallProgressBarContext = document.getElementById('overallProgressBarChart').getContext('2d');
+            new Chart(overallProgressBarContext, {
+                type: 'bar',
+                data: {
+                    labels: ['Avance Planificado', 'Avance Real', 'Pendiente por Acabar'],
+                    datasets: [
+                        {
+                            label: 'Porcentaje de Obra',
+                            data: [
+                                projectData.general.avancePlanificado,
+                                projectData.general.avanceReal,
+                                (100 - projectData.general.avanceObra)
+                            ],
+                            backgroundColor: [
+                                '#63b3ed', /* Azul claro para Planificado */
+                                '#48bb78', /* Verde para Real */
+                                '#f6ad55'  /* Naranja para Pendiente */
+                            ],
+                            borderColor: [
+                                '#4299e1',
+                                '#38a169',
+                                '#ed8936'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // Make it a horizontal bar chart
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)' /* Light grid lines for X axis */
+                            },
+                            ticks: {
+                                color: '#e2e8f0', /* Text color for X axis labels */
+                                callback: function(value) {
+                                    return value + '%'; // Add percentage symbol
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false /* No grid lines for Y axis */
+                            },
+                            ticks: {
+                                color: '#e2e8f0' /* Text color for Y axis labels */
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false /* No legend needed for single dataset */
+                        },
+                        title: {
+                            display: false,
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
